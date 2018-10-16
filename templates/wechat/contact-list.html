@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>更多联系人</title>
+</head>
+<body>
+<h1>更多联系人</h1>
+
+<div style="float: left; width: 20%;">
+    <ul>
+        {% for item in contact_list_dict.MemberList %}
+            <li username="{{ item.UserName }}"> -- {{ item.NickName }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div style="float: left; width: 80%;">
+    <p><input  id="toUser" type="text" placeholder="接收消息用户"></p>
+    <p><textarea  id="msg" placeholder="请输入要发送信息" ></textarea></p>
+    <p><input id="btn" type="button" value="发送"></p>
+    <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+    <script>
+        $(function () {
+            bindSendMsg();
+        });
+        function bindSendMsg() {
+            $('#btn').click(function () {
+                $.ajax({
+                    url: '/send-msg',
+                    type: 'GET',
+                    data: {'toUser': $('#toUser').val(), 'msg':$('#msg').val()},
+                    dataType:'JSON',
+                    success: function (arg) {
+                        
+                    }
+                })
+            })
+        }
+
+        function bindLi() { // 点击li标签内容获取username
+            $('li').dblclick(function () {
+                var v = $(this).attr('username');
+                $('#toUser').val(v);
+            })
+        }
+        
+        function getMag() {
+            $.ajax({
+                url: '/get-msg',
+                type: 'GET',
+                dataType: 'JSON',
+                success:function (arg) {
+                    console.log(arg);
+                    {#getMag()#}
+                }
+            })
+        }
+    </script>
+
+</div>
+</body>
+</html>

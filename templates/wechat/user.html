@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户</title>
+</head>
+<body>
+    <div>个人信息 </div>
+        <ul>
+            {% for item in user_init_dict.ContactList %}
+                <li>{{ item.NickName }}</li>
+            {% endfor %}
+        </ul>
+
+    <a href="/contact-list">查看更多联系人</a>
+    <div>公众号信息</div>
+
+{#    	for item in user_init_dict['MPSubscribeMsgList']:#}
+{#		print (item['NickName'])#}
+{#		for msg in item['MPArticleList']:#}
+{#			print ('msg.Url:', msg['Url'], 'msg.Title:', msg['Title'])#}
+        {% for a in user_init_dict.MPSubscribeMSgList %}
+            <h3>{{ a.NickName }}</h3>
+            {% for msg in a.MPArticleList %}
+                <div style="color: cornflowerblue"><a href="{{ msg.Url }}">{{ msg.Title }}</a></div>
+            {% endfor %}
+        {% endfor %}
+
+</body>
+</html>

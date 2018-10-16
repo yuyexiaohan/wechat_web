@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body>
+
+<img height="340px" width="340px" id="qcode" src="https://login.weixin.qq.com/qrcode/{{ end_url }}" alt="">
+<script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script>
+    $(function () {
+        checkLogin();
+    });
+    
+    function checkLogin() {
+        $.ajax({
+            url: '/check-login',
+            type: 'GET',
+            // 对返回的数据进行处理
+            dataType: 'JSON',
+            success:function (arg) {
+                if (arg.code == 408){
+                    checkLogin()
+                }else if (arg.code == 201){
+                    $('#qcode').attr('src', arg.data);
+                    checkLogin() // 形成一个循环，长轮询接收扫码信息
+                }else if (arg.code == 200){
+                    location.href = '/user'
+                }
+            }
+
+        }
+
+        )
+    }
+</script>
+</body>
+</html>
