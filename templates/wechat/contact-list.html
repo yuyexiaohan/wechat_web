@@ -22,6 +22,7 @@
     <script>
         $(function () {
             bindSendMsg();
+            getMag();
         });
         function bindSendMsg() {
             $('#btn').click(function () {
@@ -48,10 +49,10 @@
             $.ajax({
                 url: '/get-msg',
                 type: 'GET',
-                dataType: 'JSON',
+                //dataType: 'JSON',
                 success:function (arg) {
                     console.log(arg);
-                    {#getMag()#}
+                    getMag();
                 }
             })
         }

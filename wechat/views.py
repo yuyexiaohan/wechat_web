@@ -137,24 +137,23 @@ def wechat_user(request):
 	# 		print ('**key**', k, '\n', '**value**', v)
 	# except Exception as e:
 	# 	print(e)
-	for item in user_init_dict['MPSubscribeMsgList']:
-		print (item['NickName'])
-		for msg in item['MPArticleList']:
-			print ('msg.Url:', msg['Url'], 'msg.Title:', msg['Title'])
+	# for item in user_init_dict['MPSubscribeMsgList']:
+	# 	print (item['NickName'])
+	# 	for msg in item['MPArticleList']:
+	# 		print ('msg.Url:', msg['Url'], 'msg.Title:', msg['Title'])
 	return render(request, 'wechat/user.html', {'user_init_dict': user_init_dict})
 
 
 def contact_ist(request):
 	"""4 更多联系人"""
-
 	base_url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact?pass_ticket=%s&r=%s&seq=0&skey=%s"
 	ctime = time.time()
 	url = base_url % (TICKET_DICT['pass_ticket'], ctime, TICKET_DICT['skey'])
 	response = requests.get (url=url, cookies=ALL_COOKIE_DICT)
 	response.encoding = 'utf-8'
 	contact_list_dict = json.loads (response.text)
-	for item in contact_list_dict['MemberList']:
-		print (item['NickName'], item['UserName'])
+	# for item in contact_list_dict['MemberList']:
+	# 	print (item['NickName'], item['UserName'])
 	return render(request, 'wechat/contact-list.html', {'contact_list_dict': contact_list_dict})
 
 
@@ -195,5 +194,61 @@ def send_msg(request):
 
 
 def get_msg(request):
-	"""获取消息"""
-	return render(request, 'wechat/get_mess')
+	"""6 获取消息"""
+	# 1. 检查是否有消息到，synckey(初始化信息获取)
+	# 2. 如果 window.synccheck={retcode:"0",selector:"2"}，有消息到来
+	#       ：https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsync?sid=WFKXEGSyWEgY8eN3&skey=@
+	# crypt_d83b5b90_e4138fcba710f4c7d3da566a64d73f40&lang=zh_CN&pass_ticket=MIHBwaa%
+	# 252BZqty5E5e1l8UkaAEc48bqCP6Km7WxPAP0txDEdDdWC%252BPE8zfHOXg3ywr
+	#       获取消息
+	#       获取synckey
+	print ('start....')
+	synckey_list = USER_INIT_DICT['SyncKey']['List']
+	sync_list = []
+	for item in synckey_list:
+		temp = "%s_%s" % (item['Key'], item['Val'],)
+		sync_list.append (temp)
+	synckey = "|".join (sync_list)
+	r6 = requests.get(
+		url="https://webpush.wx.qq.com/cgi-bin/mmwebwx-bin/synccheck",
+		params={
+			'r': time.time(),
+			'skey': TICKET_DICT['skey'],
+			'sid': TICKET_DICT['wxsid'],
+			'uin': TICKET_DICT['wxuin'],
+			'deviceid': "e402310790089148",
+			'synckey': synckey
+		},
+		cookies=ALL_COOKIE_DICT
+	)
+	if 'retcode:"0",selector:"2"' in r6.text:
+		post_dict = {
+			'BaseRequest': {
+				'DeviceID': "e402310790089148",
+				'Sid': TICKET_DICT['wxsid'],
+				'Uin': TICKET_DICT['wxuin'],
+				'Skey': TICKET_DICT['skey'],
+			},
+			"SyncKey": USER_INIT_DICT['SyncKey'],
+			'rr': 1
+		}
+		r7 = requests.post (
+			url='https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsync',
+			params={
+				'skey': TICKET_DICT['skey'],
+				'sid': TICKET_DICT['wxsid'],
+				'pass_ticket': TICKET_DICT['pass_ticket'],
+				'lang': 'zh_CN'
+			},
+			json=post_dict
+		)
+		r7.encoding = 'utf-8'
+		msg_dict = json.loads (r7.text)
+		for msg_info in msg_dict['AddMsgList']:
+			print (msg_info['Content'])
+
+		USER_INIT_DICT['SyncKey'] = msg_dict['SyncKey']
+	print('r6.text:', r6.text)
+	print ('end...')
+	return HttpResponse('ok-r6')
+	# return render(request, 'wechat/get_mess')
